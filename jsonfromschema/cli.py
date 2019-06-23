@@ -11,6 +11,7 @@ def main(args=sys.argv[1:]):
     parser.add_argument('schema', type=str, help='path to JSON Schema file')
     parser.add_argument('output', type=str, help='path to JSON data output file')
     parser.add_argument('-v', '--verbose', action="store_true", help='verbose mode')
+    parser.add_argument('-w', '--validate', action="store_true", help='use jsonschema to validate output')
     args = parser.parse_args()
     print('schema', args.schema)
     print('output', args.output)
@@ -30,5 +31,14 @@ def main(args=sys.argv[1:]):
         output_json = json.dumps(output_dict)
         output.write(output_json)
     output.close()
+
+    if args.validate:
+        import pkgutil
+        if not pkgutil.find_loader("jsonschema"):
+            print('ERROR: jsonschema not installed, do: pip install jsonschema [--user]')
+            sys.exit(1)
+        import jsonschema  # optional dependancy
+
+        jsonschema.validate(instance=output_dict, schema=schema)
     
     sys.exit(0) 
