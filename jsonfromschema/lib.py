@@ -34,7 +34,10 @@ def generate_dict(schema_object):
                 data[property_name] = property['minimum']
             
             if 'exclusiveMinimum' in property:
-                data[property_name] = property['exclusiveMinimum'] + 1
+                if 'multipleOf' in property and property['multipleOf'] != 1:
+                    data[property_name] = property['exclusiveMinimum'] + property['multipleOf']
+                else:
+                    data[property_name] = property['exclusiveMinimum'] + 1
             
             if 'exclusiveMinimum' is True: # draft-4
                 data[property_name] += 1
@@ -67,10 +70,25 @@ def generate_dict(schema_object):
             data[property_name] = generate_dict(property)
         elif property_type == 'array':
             data[property_name] = [0]
+
+            if 'minItems' in property:
+                data[property_name] = [0] * property['minItems']
+
+            if 'items' in property:
+                if type(property['items']) == type([]):
+                    for item in property['items']:
+                        print('item', item)
+                elif type(property['items']) == type({}):
+                       print('single_item', property['items'])
+                else:
+                    print('WARNING: Unsupported array items type {type}'.format(type=type(property['items'])))
+                    data[property_name] = ['warning_unsupported_array_items_type']
+                    continue
+
+
             # TODO items one
             # TODO items list
             # TODO contains
-            # TODO minItems
             # TODO uniqueItems
         elif property_type == 'boolean':
             data[property_name] = False

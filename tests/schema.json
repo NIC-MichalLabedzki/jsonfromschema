@@ -66,11 +66,36 @@
             "type": "number"
         }
     },
+    "array_item_number_min_items_0": {
+        "type": "array",
+        "minItems": 0,
+        "items": {
+            "type": "number"
+        }
+    },
+    "array_item_number_min_items_2": {
+        "type": "array",
+        "minItems": 2,
+        "items": {
+            "type": "number"
+        }
+    },
     "array_item_string": {
         "type": "array",
         "items": {
             "type": "string"
         }
+    },
+    "array_item_string_list": {
+        "type": "array",
+        "items": [
+            {
+                "type": "string"
+            },
+            {
+                "type": "integer"
+            }
+        ]
     }
   }
 }
