@@ -13,8 +13,6 @@ def main(args=sys.argv[1:]):
     parser.add_argument('-v', '--verbose', action="store_true", help='verbose mode')
     parser.add_argument('-w', '--validate', action="store_true", help='use jsonschema to validate output')
     args = parser.parse_args()
-    print('schema', args.schema)
-    print('output', args.output)
 
     with open(args.schema, 'r') as input:
         schema = json.load(input)
@@ -40,5 +38,6 @@ def main(args=sys.argv[1:]):
         import jsonschema  # optional dependancy
 
         jsonschema.validate(instance=output_dict, schema=schema)
-    
-    sys.exit(0) 
+        if args.verbose:
+            print('>>> Validation result: OK')
+    sys.exit(0)

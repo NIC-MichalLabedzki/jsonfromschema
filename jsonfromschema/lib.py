@@ -3,8 +3,6 @@ import sys
 
 
 def generate_type(section):
-    print('generate_type', section)
-
     section_type = section['type']
 
     if 'default' in section:
