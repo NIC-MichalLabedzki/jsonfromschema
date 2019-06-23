@@ -2,100 +2,110 @@ import math
 import sys
 
 
+def generate_type(section):
+    print('generate_type', section)
+
+    section_type = section['type']
+
+    if 'default' in section:
+        data = section['default']
+        return data
+
+    if 'enum' in section:
+        data = section['enum'][0]
+        return data
+
+    if section_type == 'string':
+        data = ""
+
+        if 'minLength' in section:
+            data = 'a' * section['minLength']
+
+        # TODO pattern
+        # TODO format
+    elif section_type == 'integer':
+        data = 0
+
+        if 'multipleOf' in section:
+            data = section['multipleOf']
+
+        if 'minimum' in section:
+            data = section['minimum']
+
+        if 'exclusiveMinimum' in section:
+            if 'multipleOf' in section and section['multipleOf'] != 1:
+                data = section['exclusiveMinimum'] + section['multipleOf']
+            else:
+                data = section['exclusiveMinimum'] + 1
+
+        if 'exclusiveMinimum' is True: # draft-4
+            data += 1
+            # TODO check invalid combination of *minimum/*maximum/multiple
+            #if 'maximum' in section and data > section['maximum']:
+            #    raise Exception('')
+    elif section_type == 'number':
+        data = 0.0
+
+        if 'multipleOf' in section:
+            data = section['multipleOf']
+
+        if 'minimum' in section:
+            data = section['minimum']
+
+        if 'exclusiveMinimum' in section and 'exclusiveMinimum' is not False:
+            if 'exclusiveMinimum' is True: # draft-4
+                exclusive_minimum = section['minimum']
+            else:
+                exclusive_minimum = section['exclusiveMinimum']
+            m, e = math.frexp(exclusive_minimum)
+            value =  (m + sys.float_info.epsilon) * 2 ** e
+            if 'multipleOf' in section:
+                multiple_of = section['multipleOf']
+                value = math.ceil(value / multiple_of) * multiple_of
+
+            data = value
+        # TODO check invalid combination of *minimum/*maximum/multiple
+    elif section_type == 'object':
+        data = generate_dict(section)
+    elif section_type == 'array':
+        data = [0]
+
+        if 'minItems' in section:
+            data = [0] * section['minItems']
+
+        if 'items' in section:
+            if type(section['items']) == type([]):
+                data = []
+                for item in section['items']:
+                    data.append(generate_type(item))
+            elif type(section['items']) == type({}):
+                    data = [generate_type(section['items'])]
+                    if 'minItems' in section:
+                        data = data * section['minItems']
+            else:
+                print('WARNING: Unsupported array items type {type}'.format(type=type(section['items'])))
+                data = ['warning_unsupported_array_items_type']
+                return data
+
+
+        # TODO items one
+        # TODO items list
+        # TODO contains
+        # TODO uniqueItems
+    elif section_type == 'boolean':
+        data = False
+    elif section_type == 'null':
+        data = None
+    else:
+        data = ['warning_unsupported_type']
+        print('WARNING: Not supported type: {section_type} in section "{section_name}"'.format(section_type=section_type, section_name=section_name))
+
+    return data
+
 def generate_dict(schema_object):
     data = {}
     for property_name in schema_object['properties']:
         property = schema_object['properties'][property_name]
-        property_type = property['type']
-
-        if 'default' in property:
-            data[property_name] = property['default']
-            continue
-        
-        if 'enum' in property:
-            data[property_name] = property['enum'][0]
-            continue
-
-        if property_type == 'string':
-            data[property_name] = ""
-
-            if 'minLength' in property:
-                data[property_name] = 'a' * property['minLength']
-
-            # TODO pattern
-            # TODO format
-        elif property_type == 'integer':
-            data[property_name] = 0
-
-            if 'multipleOf' in property:
-                data[property_name] = property['multipleOf']
-            
-            if 'minimum' in property:
-                data[property_name] = property['minimum']
-            
-            if 'exclusiveMinimum' in property:
-                if 'multipleOf' in property and property['multipleOf'] != 1:
-                    data[property_name] = property['exclusiveMinimum'] + property['multipleOf']
-                else:
-                    data[property_name] = property['exclusiveMinimum'] + 1
-            
-            if 'exclusiveMinimum' is True: # draft-4
-                data[property_name] += 1
-                # TODO check invalid combination of *minimum/*maximum/multiple
-                #if 'maximum' in property and data[property_name] > property['maximum']:
-                #    raise Exception('')
-        elif property_type == 'number':
-            data[property_name] = 0.0
-    
-            if 'multipleOf' in property:
-                data[property_name] = property['multipleOf']
-
-            if 'minimum' in property:
-                data[property_name] = property['minimum']
-            
-            if 'exclusiveMinimum' in property and 'exclusiveMinimum' is not False:
-                if 'exclusiveMinimum' is True: # draft-4
-                    exclusive_minimum = property['minimum']
-                else:
-                    exclusive_minimum = property['exclusiveMinimum']
-                m, e = math.frexp(exclusive_minimum)
-                value =  (m + sys.float_info.epsilon) * 2 ** e
-                if 'multipleOf' in property:
-                    multiple_of = property['multipleOf']
-                    value = math.ceil(value / multiple_of) * multiple_of
-                
-                data[property_name] = value   
-            # TODO check invalid combination of *minimum/*maximum/multiple
-        elif property_type == 'object':
-            data[property_name] = generate_dict(property)
-        elif property_type == 'array':
-            data[property_name] = [0]
-
-            if 'minItems' in property:
-                data[property_name] = [0] * property['minItems']
-
-            if 'items' in property:
-                if type(property['items']) == type([]):
-                    for item in property['items']:
-                        print('item', item)
-                elif type(property['items']) == type({}):
-                       print('single_item', property['items'])
-                else:
-                    print('WARNING: Unsupported array items type {type}'.format(type=type(property['items'])))
-                    data[property_name] = ['warning_unsupported_array_items_type']
-                    continue
-
-
-            # TODO items one
-            # TODO items list
-            # TODO contains
-            # TODO uniqueItems
-        elif property_type == 'boolean':
-            data[property_name] = False
-        elif property_type == 'null':
-            data[property_name] = None
-        else:
-            data[property_name] = ['warning_unsupported_type']
-            print('WARNING: Not supported type: {property_type} in property "{property_name}"'.format(property_type=property_type, property_name=property_name))
+        data[property_name] = generate_type(property)
 
     return data
