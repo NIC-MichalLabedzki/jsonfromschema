@@ -1,0 +1,76 @@
+{
+  "$id": "https://example.com/types.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Types",
+  "type": "object",
+  "properties": {
+    "string": {
+      "type": "string"
+    },
+    "string_default": {
+      "type": "string",
+      "default": "foo"
+    },
+    "integer_minimum": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "integer_exclusive_minimum": {
+      "type": "integer",
+      "multipleOf": 10,
+      "exclusiveMinimum": 40
+    },
+    "number_minimum": {
+      "type": "number",
+      "minimum": 2
+    },
+    "number_exclusive_minimum": {
+      "type": "number",
+      "exclusiveMinimum": 2
+    },
+    "number_exclusive_minimum": {
+      "type": "number",
+      "multipleOf": 10,
+      "exclusiveMinimum": 40
+    },
+    "string_min_lenght": {
+        "type": "string",
+        "minLength": 3
+    },
+    "string_enum": {
+        "type": "string",
+        "enum": [
+            "a1",
+            "a2",
+            "a3"
+        ]
+    },
+    "null": {
+      "type": "null"
+    },
+    "object": {
+        "type": "object",
+        "properties": {
+            "string": {
+                "type": "string",
+                "default": "son of J"
+            }
+        }
+    },
+    "array": {
+        "type": "array"
+    },
+    "array_item_number": {
+        "type": "array",
+        "items": {
+            "type": "number"
+        }
+    },
+    "array_item_string": {
+        "type": "array",
+        "items": {
+            "type": "string"
+        }
+    }
+  }
+}
