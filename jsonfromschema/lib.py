@@ -77,6 +77,7 @@ def generate_dict(schema_object):
         elif property_type == 'null':
             data[property_name] = None
         else:
-            raise Exception(f'Not supported type: {property_type} in property "{property_name}"')
+            data[property_name] = ['warning_unsupported_type']
+            print('WARNING: Not supported type: {property_type} in property "{property_name}"'.format(property_type=property_type, property_name=property_name))
 
     return data
