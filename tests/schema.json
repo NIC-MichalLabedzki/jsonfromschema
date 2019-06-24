@@ -3,6 +3,12 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Types",
   "type": "object",
+  "definitions": {
+    "ref_string": {
+      "type": "string",
+      "default": "ref_string 1"
+    }
+  },
   "properties": {
     "string": {
       "type": "string"
@@ -96,6 +102,12 @@
                 "type": "integer"
             }
         ]
+    },
+    "ref_string_1": {
+        "$ref": "#/definitions/ref_string"
+    },
+    "ref_string_2": {
+        "$ref": "#/definitions/ref_string"
     }
   }
 }

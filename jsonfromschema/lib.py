@@ -2,16 +2,30 @@ import math
 import sys
 
 
-def generate_type(section):
-    section_type = section['type']
-
+def generate_type(schema_root, section):
     if 'default' in section:
         data = section['default']
         return data
 
+    if '$ref' in section:
+        ref = section['$ref'].split('#')
+        if ref[0] == '':
+            ref_where = ref[1].split('/')
+            ref_section = schema_root[ref_where[1]][ref_where[2]]
+            return generate_type(schema_root, ref_section)
+        else:
+            print('WARNING: $ref non-this-document not supported yet')
+
     if 'enum' in section:
         data = section['enum'][0]
         return data
+
+    if 'type' in section:
+        section_type = section['type']
+    else:
+        section_type = 'number'
+
+    # types from specification
 
     if section_type == 'string':
         data = ""
@@ -75,9 +89,9 @@ def generate_type(section):
             if type(section['items']) == type([]):
                 data = []
                 for item in section['items']:
-                    data.append(generate_type(item))
+                    data.append(generate_type(schema_root, item))
             elif type(section['items']) == type({}):
-                    data = [generate_type(section['items'])]
+                    data = [generate_type(schema_root, section['items'])]
                     if 'minItems' in section:
                         data = data * section['minItems']
             else:
@@ -104,6 +118,6 @@ def generate_dict(schema_object):
     data = {}
     for property_name in schema_object['properties']:
         property = schema_object['properties'][property_name]
-        data[property_name] = generate_type(property)
+        data[property_name] = generate_type(schema_object, property)
 
     return data

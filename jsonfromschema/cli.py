@@ -33,7 +33,7 @@ def main(args=sys.argv[1:]):
     if args.validate:
         import pkgutil
         if not pkgutil.find_loader("jsonschema"):
-            print('ERROR: jsonschema not installed, do: pip install jsonschema [--user]')
+            print('ERROR: jsonschema not installed, do: pip install jsonschema --user')
             sys.exit(1)
         import jsonschema  # optional dependancy
 
