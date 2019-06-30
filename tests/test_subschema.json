@@ -1,0 +1,11 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "string",
+    "definitions": {
+        "external_string": {
+        "type": "string",
+        "default": "subschema_foo"
+        }
+    },
+    "default": "subschema"
+}

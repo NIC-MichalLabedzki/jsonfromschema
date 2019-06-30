@@ -1,5 +1,6 @@
 import argparse
 import json
+import os
 import sys
 import jsonfromschema.lib
 
@@ -21,8 +22,11 @@ def main(args=sys.argv[1:]):
             pprint(schema)
     input.close()
 
+    root_file = os.path.abspath(args.schema)
+    root_dir = os.path.dirname(root_file)
+
     with open(args.output, 'w') as output:
-        output_dict = jsonfromschema.lib.generate_dict(schema)
+        output_dict = jsonfromschema.lib.generate_dict(root_dir, schema, verbose=args.verbose)
         if args.verbose:
             print('>>> Output is:')
             pprint(output_dict)
@@ -37,7 +41,8 @@ def main(args=sys.argv[1:]):
             sys.exit(1)
         import jsonschema  # optional dependancy
 
-        jsonschema.validate(instance=output_dict, schema=schema)
+        resolver = jsonschema.RefResolver(base_uri='file:{}'.format(root_file), referrer=schema)
+        jsonschema.validate(instance=output_dict, schema=schema, resolver=resolver)
         if args.verbose:
             print('>>> Validation result: OK')
     sys.exit(0)

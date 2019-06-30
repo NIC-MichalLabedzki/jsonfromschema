@@ -1,5 +1,4 @@
 {
-  "$id": "https://example.com/types.schema.json",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Types",
   "type": "object",
@@ -108,6 +107,12 @@
     },
     "ref_string_2": {
         "$ref": "#/definitions/ref_string"
+    },
+    "ref_external_file_string": {
+        "$ref": "./test_subschema.json"
+    },
+    "ref_external_file_string_in_definitions": {
+        "$ref": "./test_subschema.json#/definitions/external_string"
     }
   }
 }
