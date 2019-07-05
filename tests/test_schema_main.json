@@ -6,6 +6,19 @@
     "ref_string": {
       "type": "string",
       "default": "ref_string 1"
+    },
+    "test_complicated_oneOf": {
+        "type": "number",
+        "oneOf": [
+            {
+                "multipleOf": 3,
+                "default": 15
+            },
+            {
+                "multipleOf": 5,
+                "default": 15
+            }
+        ]
     }
   },
   "properties": {
@@ -113,6 +126,44 @@
     },
     "ref_external_file_string_in_definitions": {
         "$ref": "./test_subschema.json#/definitions/external_string"
+    },
+    "test_anyOf": {
+        "type": "number",
+        "anyOf": [
+            { "default": 11 },
+            { "default": 22 }
+        ]
+    },
+    "test_null_oneOf": {
+        "oneOf": [
+            {
+                "type": "number",
+                "multipleOf": 3,
+                "default": 15
+            },
+            {
+                "type": "null"
+            }
+        ]
+    },
+    "test_bool_number_oneOf": {
+        "oneOf": [
+            {
+                "type": "number",
+                "multipleOf": 3,
+                "default": 15
+            },
+            {
+                "type": "boolean"
+            }
+        ]
+    },
+    "test_examples_and_default": {
+        "default": 10,
+        "examples": [11, 12]
+    },
+    "test_examples": {
+        "examples": [11, 12]
     }
   }
 }

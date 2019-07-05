@@ -5,11 +5,11 @@ import sys
 import pprint
 
 
-def generate_type(root_dir, schema_root, section, verbose=False):
-    def get_local_schema(schema_file, verbose=False):
+def generate_type(root_dir, schema_root, section, optional_args):
+    def get_local_schema(schema_file, optional_args):
         with open(schema_file, 'r') as input:
             schema = json.load(input)
-            if verbose:
+            if optional_args['verbose']:
                 print('>>> Schema[{}] is:'.format(schema_file))
                 pprint.pprint(schema)
             input.close()
@@ -23,9 +23,15 @@ def generate_type(root_dir, schema_root, section, verbose=False):
             i_schema = i_schema[i_where]
         return i_schema
 
-    if 'default' in section:
-        data = section['default']
-        return data
+    if optional_args['no-default'] == False:
+        if 'default' in section:
+            data = section['default']
+            return data
+
+    if optional_args['no-examples'] == False:
+        if 'examples' in section:
+            data = section['examples'][0]
+            return data
 
     if '$ref' in section:
         ref = section['$ref'].split('#')
@@ -36,17 +42,17 @@ def generate_type(root_dir, schema_root, section, verbose=False):
 
         if ref[0] == '':
             ref_section = get_section_from_fragment_path(ref_where, schema_root)
-            return generate_type(root_dir, schema_root, ref_section, verbose=verbose)
+            return generate_type(root_dir, schema_root, ref_section, optional_args)
         else:
             abs_file = os.path.abspath(os.path.join(root_dir, ref[0]))
             if os.path.isfile(abs_file):
-                subschema = get_local_schema(abs_file, verbose=verbose)
+                subschema = get_local_schema(abs_file, optional_args)
                 ref_section = get_section_from_fragment_path(ref_where, subschema)
-                data = generate_type(root_dir, schema_root, ref_section, verbose=verbose)
+                data = generate_type(root_dir, schema_root, ref_section, optional_args)
                 return data
             else:
                 print('WARNING: root directory is URL or it does not exist; URL are not supported yet')
-            print('WARNING: $ref non-this-document not supported yet')
+                return None
 
     if 'enum' in section:
         data = section['enum'][0]
@@ -56,6 +62,48 @@ def generate_type(root_dir, schema_root, section, verbose=False):
         section_type = section['type']
     else:
         section_type = 'number'
+
+    if 'anyOf' in section:
+        if len(section['anyOf']) < 1:
+            print('WARNING: Invalid anyOf section, need at least one item')
+            return None
+        return generate_type(root_dir, schema_root, section['anyOf'][0], optional_args)
+    if 'not' in section:
+        # TODO
+        print('WARNING: "not" is not supported yet')
+    if 'allOf' in section:
+        # TODO
+        print('WARNING: "allOf" is not supported yet')
+    if 'oneOf' in section:
+        # TODO
+        # NOTE: it does not mean "one of them", but "exactly one of them"
+        # for example {int, multileOf=3}{int, multileOf=5} then int==15 is invalid because match both
+        # NOTE 2: "default" field must be ignored in this case
+        #
+        # strategy:
+        # check types: only integer and number common part
+        count_typed = {}
+        count_any = {'counter': 0, 'list': []}
+        for item in section['oneOf']:
+            if 'type' in item:
+                if item['type'] not in count_typed:
+                    count_typed[item['type']] = {}
+                    count_typed[item['type']]['counter'] = 0
+                    count_typed[item['type']]['list'] = []
+                count_typed[item['type']]['counter'] += 1
+                count_typed[item['type']]['list'].append(item)
+            else:
+                count_any['counter'] += 1
+                count_any['list'].append(item)
+
+        for i_type in count_typed:
+            if count_typed[i_type]['counter'] == 1 and (i_type == 'null' or i_type == 'boolean' or i_type == 'string' or i_type == 'array' or i_type == 'object'):
+                return generate_type(root_dir, schema_root, count_typed[i_type]['list'][0], optional_args)
+            if i_type == 'number' and 'integer' not in count_typed and count_typed[i_type]['counter'] == 1:
+                return generate_type(root_dir, schema_root, count_typed[i_type]['list'][0], optional_args)
+            if i_type == 'integer' and 'number' not in count_typed and count_typed[i_type]['counter'] == 1:
+                return generate_type(root_dir, schema_root, count_typed[i_type]['list'][0], optional_args)
+            print('WARNING: complex "oneOf" is not supported yet')
 
     # types from specification
 
@@ -110,7 +158,7 @@ def generate_type(root_dir, schema_root, section, verbose=False):
             data = value
         # TODO check invalid combination of *minimum/*maximum/multiple
     elif section_type == 'object':
-        data = generate_dict(root_dir, section, verbose=verbose)
+        data = generate_dict(root_dir, section, optional_args)
     elif section_type == 'array':
         data = [0]
 
@@ -121,9 +169,9 @@ def generate_type(root_dir, schema_root, section, verbose=False):
             if type(section['items']) == type([]):
                 data = []
                 for item in section['items']:
-                    data.append(generate_type(root_dir, schema_root, item, verbose=verbose))
+                    data.append(generate_type(root_dir, schema_root, item, optional_args))
             elif type(section['items']) == type({}):
-                    data = [generate_type(root_dir, schema_root, section['items'], verbose=verbose)]
+                    data = [generate_type(root_dir, schema_root, section['items'], optional_args)]
                     if 'minItems' in section:
                         data = data * section['minItems']
             else:
@@ -146,10 +194,45 @@ def generate_type(root_dir, schema_root, section, verbose=False):
 
     return data
 
-def generate_dict(root_dir, schema_object, verbose=False):
+
+def generate_dict(root_dir, schema_object, optional_args=None):
+    def set_default(dict, key, value):
+        if key not in dict:
+            dict[key] = value
+    if optional_args == None:
+        optional_args = {}
+
+    set_default(optional_args, 'verbose', False)
+    set_default(optional_args, 'no-default', False)
+    set_default(optional_args, 'no-examples', False)
+
     data = {}
     for property_name in schema_object['properties']:
         property = schema_object['properties'][property_name]
-        data[property_name] = generate_type(root_dir, schema_object, property, verbose=verbose)
+        data[property_name] = generate_type(root_dir, schema_object, property, optional_args)
 
+    return data
+
+
+def generate_dict_from_file(schema_file, optional_args):
+    root_file = os.path.abspath(schema_file)
+    root_dir = os.path.dirname(root_file)
+
+    with open(root_file, 'r') as input:
+        schema = json.load(input)
+        if optional_args['verbose']:
+            print('>>> Schema is:')
+            pprint.pprint(schema)
+    input.close()
+
+    data = generate_dict(root_dir, schema, optional_args)
+    return data
+
+
+def generate_dict_from_package(package, path, optional_args):
+    import pkg_resources
+
+    schema_text = pkg_resources.resource_string(package, path)
+    schema = json.load(schema_text)
+    data = generate_dict(package, schema, optional_args, from_pkg_resources=True)
     return data

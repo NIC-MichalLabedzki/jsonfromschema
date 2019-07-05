@@ -13,6 +13,8 @@ def main(args=sys.argv[1:]):
     parser.add_argument('output', type=str, help='path to JSON data output file')
     parser.add_argument('-v', '--verbose', action="store_true", help='verbose mode')
     parser.add_argument('-w', '--validate', action="store_true", help='use jsonschema to validate output')
+    parser.add_argument('--no-default', action="store_true", help='do not use \'default\' fields in jsonschema')
+    parser.add_argument('--no-examples', action="store_true", help='do not use \'default\' fields in jsonschema')
     args = parser.parse_args()
 
     with open(args.schema, 'r') as input:
@@ -25,8 +27,17 @@ def main(args=sys.argv[1:]):
     root_file = os.path.abspath(args.schema)
     root_dir = os.path.dirname(root_file)
 
+    optional_args = { 'verbose': False}
+
+    if args.no_default:
+        optional_args['no-default'] = True
+    if args.no_examples:
+        optional_args['no-examples'] = True
+    if args.verbose:
+        optional_args['verbose'] = True
+
     with open(args.output, 'w') as output:
-        output_dict = jsonfromschema.lib.generate_dict(root_dir, schema, verbose=args.verbose)
+        output_dict = jsonfromschema.lib.generate_dict(root_dir, schema, optional_args)
         if args.verbose:
             print('>>> Output is:')
             pprint(output_dict)
