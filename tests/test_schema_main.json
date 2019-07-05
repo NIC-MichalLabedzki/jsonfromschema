@@ -134,7 +134,7 @@
             { "default": 22 }
         ]
     },
-    "test_null_oneOf": {
+    "oneOf_null_number": {
         "oneOf": [
             {
                 "type": "number",
@@ -146,7 +146,7 @@
             }
         ]
     },
-    "test_bool_number_oneOf": {
+    "oneOf_bool_number": {
         "oneOf": [
             {
                 "type": "number",
@@ -158,12 +158,21 @@
             }
         ]
     },
-    "test_examples_and_default": {
+    "examples_and_default": {
         "default": 10,
         "examples": [11, 12]
     },
-    "test_examples": {
+    "examples": {
         "examples": [11, 12]
+    },
+    "const": {
+        "const": "example_const"
+    },
+    "enum_like_const": {
+        "enum": ["example_enum_like_const"]
+    },
+    "enum_2": {
+        "enum": ["enum1", "enum2"]
     }
   }
 }

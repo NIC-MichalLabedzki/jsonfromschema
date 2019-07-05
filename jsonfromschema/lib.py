@@ -23,6 +23,9 @@ def generate_type(root_dir, schema_root, section, optional_args):
             i_schema = i_schema[i_where]
         return i_schema
 
+    if 'const' in section:
+        return section['const']
+
     if optional_args['no-default'] == False:
         if 'default' in section:
             data = section['default']
@@ -32,6 +35,10 @@ def generate_type(root_dir, schema_root, section, optional_args):
         if 'examples' in section:
             data = section['examples'][0]
             return data
+
+    if 'enum' in section:
+        data = section['enum'][0]
+        return data
 
     if '$ref' in section:
         ref = section['$ref'].split('#')
@@ -53,10 +60,6 @@ def generate_type(root_dir, schema_root, section, optional_args):
             else:
                 print('WARNING: root directory is URL or it does not exist; URL are not supported yet')
                 return None
-
-    if 'enum' in section:
-        data = section['enum'][0]
-        return data
 
     if 'type' in section:
         section_type = section['type']
