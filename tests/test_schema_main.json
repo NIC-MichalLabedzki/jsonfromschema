@@ -202,6 +202,26 @@
                 "const": null
             }
         ]
+    },
+    "oneOf_two_string_consts": {
+        "oneOf": [
+            {
+                "const": "string1"
+            },
+            {
+                "const": "string2"
+            }
+        ]
+    },
+    "oneOf_multitypes": {
+        "oneOf": [
+            {
+                "const": "const_string"
+            },
+            {
+                "type": ["null", "boolean"]
+            }
+        ]
     }
   }
 }

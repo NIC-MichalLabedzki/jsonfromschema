@@ -1,3 +1,4 @@
+import collections
 import json
 import math
 import os
@@ -95,7 +96,12 @@ def generate_type(root_dir, schema_root, section, optional_args):
         for item in section['oneOf']:
             detected_type = None
             if 'type' in item:
-                detected_type = item['type']
+                if isinstance(item['type'], list) and len(item['type']) >= 1:
+                    or_types_counter = collections.Counter(item['type'])
+                    print(or_types_counter)
+                    detected_type = None
+                else:
+                    detected_type = item['type']
             else:
                 if 'const' in item:
                     if type(item['const']) is type('string'):
@@ -125,6 +131,28 @@ def generate_type(root_dir, schema_root, section, optional_args):
                 count_any['counter'] += 1
                 count_any['list'].append(item)
 
+        # const reduction
+        for i_type in count_typed:
+            current_const = None
+            the_same_const_counter = 0
+            non_const_counter =0
+
+            for item in count_typed[i_type]['list']:
+                if 'const' not in item:
+                    non_const_counter += 1
+                    continue
+                if current_const == None:
+                    current_const = item
+                    continue
+                else:
+                    if current_const['const'] == item['const']:
+                        the_same_const_counter += 1
+
+            if non_const_counter == 0 and the_same_const_counter == 0:
+                count_typed[i_type]['counter'] = 1
+                count_typed[i_type]['list'] = [current_const]
+
+        # last choice
         if count_any['counter'] == 0:
             for i_type in count_typed:
                 if count_typed[i_type]['counter'] == 1 and (i_type == 'null' or i_type == 'boolean' or i_type == 'string' or i_type == 'array' or i_type == 'object'):
@@ -134,6 +162,7 @@ def generate_type(root_dir, schema_root, section, optional_args):
                 if i_type == 'integer' and 'number' not in count_typed and count_typed[i_type]['counter'] == 1:
                     return generate_type(root_dir, schema_root, count_typed[i_type]['list'][0], optional_args)
 
+        print('TYPED', count_typed)
         print('WARNING: complex "oneOf" is not supported yet')
 
     # types from specification
