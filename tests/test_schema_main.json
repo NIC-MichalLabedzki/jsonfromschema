@@ -66,6 +66,10 @@
     "null": {
       "type": "null"
     },
+    "boolean": {
+      "type": "boolean",
+      "default": true
+    },
     "object": {
         "type": "object",
         "properties": {
@@ -173,6 +177,31 @@
     },
     "enum_2": {
         "enum": ["enum1", "enum2"]
+    },
+    "oneOf_const": {
+        "oneOf": [
+            {
+                "const": "string"
+            },
+            {
+                "const": 0
+            },
+            {
+                "const": 0.1
+            },
+            {
+                "const": { "type": "object" }
+            },
+            {
+                "const": { "type": "array" }
+            },
+            {
+                "const": true
+            },
+            {
+                "const": null
+            }
+        ]
     }
   }
 }

@@ -62,8 +62,13 @@ def generate_type(root_dir, schema_root, section, optional_args):
                 return None
 
     if 'type' in section:
-        section_type = section['type']
+        if isinstance(section['type'], list) and len(section['type']) >= 1:
+            # NOTE: use first type only is enough
+            section_type = section['type'][0]
+        else:
+            section_type = section['type']
     else:
+        # NOTE: any type is ok so use "number"
         section_type = 'number'
 
     if 'anyOf' in section:
@@ -88,25 +93,48 @@ def generate_type(root_dir, schema_root, section, optional_args):
         count_typed = {}
         count_any = {'counter': 0, 'list': []}
         for item in section['oneOf']:
+            detected_type = None
             if 'type' in item:
-                if item['type'] not in count_typed:
-                    count_typed[item['type']] = {}
-                    count_typed[item['type']]['counter'] = 0
-                    count_typed[item['type']]['list'] = []
-                count_typed[item['type']]['counter'] += 1
-                count_typed[item['type']]['list'].append(item)
+                detected_type = item['type']
+            else:
+                if 'const' in item:
+                    if type(item['const']) is type('string'):
+                        detected_type = 'string'
+                    elif type(item['const']) is type(1.0):
+                        detected_type = 'number'
+                    elif type(item['const']) is type(1):
+                        detected_type = 'integer'
+                    elif type(item['const']) is type(False):
+                        detected_type = 'boolean'
+                    elif type(item['const']) is type(None):
+                        detected_type = 'null'
+                    elif type(item['const']) is type({}):
+                        detected_type = 'object'
+                    elif type(item['const']) is type([]):
+                        detected_type = 'array'
+
+            if detected_type is not None and detected_type not in count_typed:
+                count_typed[detected_type] = {}
+                count_typed[detected_type]['counter'] = 0
+                count_typed[detected_type]['list'] = []
+
+            if detected_type is not None:
+                count_typed[detected_type]['counter'] += 1
+                count_typed[detected_type]['list'].append(item)
             else:
                 count_any['counter'] += 1
                 count_any['list'].append(item)
 
-        for i_type in count_typed:
-            if count_typed[i_type]['counter'] == 1 and (i_type == 'null' or i_type == 'boolean' or i_type == 'string' or i_type == 'array' or i_type == 'object'):
-                return generate_type(root_dir, schema_root, count_typed[i_type]['list'][0], optional_args)
-            if i_type == 'number' and 'integer' not in count_typed and count_typed[i_type]['counter'] == 1:
-                return generate_type(root_dir, schema_root, count_typed[i_type]['list'][0], optional_args)
-            if i_type == 'integer' and 'number' not in count_typed and count_typed[i_type]['counter'] == 1:
-                return generate_type(root_dir, schema_root, count_typed[i_type]['list'][0], optional_args)
-            print('WARNING: complex "oneOf" is not supported yet')
+        if count_any['counter'] == 0:
+            for i_type in count_typed:
+                if count_typed[i_type]['counter'] == 1 and (i_type == 'null' or i_type == 'boolean' or i_type == 'string' or i_type == 'array' or i_type == 'object'):
+                    return generate_type(root_dir, schema_root, count_typed[i_type]['list'][0], optional_args)
+                if i_type == 'number' and 'integer' not in count_typed and count_typed[i_type]['counter'] == 1:
+                    return generate_type(root_dir, schema_root, count_typed[i_type]['list'][0], optional_args)
+                if i_type == 'integer' and 'number' not in count_typed and count_typed[i_type]['counter'] == 1:
+                    return generate_type(root_dir, schema_root, count_typed[i_type]['list'][0], optional_args)
+
+        print('WARNING: complex "oneOf" is not supported yet')
 
     # types from specification
 
@@ -193,7 +221,7 @@ def generate_type(root_dir, schema_root, section, optional_args):
         data = None
     else:
         data = ['warning_unsupported_type']
-        print('WARNING: Not supported type: {section_type} in section "{section_name}"'.format(section_type=section_type, section_name=section_name))
+        print('WARNING: Not supported type: {section_type}'.format(section_type=section_type))
 
     return data
 
