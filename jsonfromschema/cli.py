@@ -1,10 +1,11 @@
 import argparse
 import json
 import os
+import pprint
 import sys
 import jsonfromschema.lib
 
-from pprint import pprint
+
 
 
 def main(args=sys.argv[1:]):
@@ -21,7 +22,7 @@ def main(args=sys.argv[1:]):
         schema = json.load(input)
         if args.verbose:
             print('>>> Schema is:')
-            pprint(schema)
+            pprint.pprint(schema)
     input.close()
 
     root_file = os.path.abspath(args.schema)
@@ -40,7 +41,7 @@ def main(args=sys.argv[1:]):
         output_dict = jsonfromschema.lib.generate_dict(root_dir, schema, optional_args)
         if args.verbose:
             print('>>> Output is:')
-            pprint(output_dict)
+            pprint.pprint(output_dict)
         output_json = json.dumps(output_dict)
         output.write(output_json)
     output.close()
