@@ -98,8 +98,22 @@ def generate_type(root_dir, schema_root, section, optional_args):
             if 'type' in item:
                 if isinstance(item['type'], list) and len(item['type']) >= 1:
                     or_types_counter = collections.Counter(item['type'])
-                    print(or_types_counter)
                     detected_type = None
+                    if or_types_counter['null'] == 1:
+                        detected_type = 'null'
+                    elif or_types_counter['boolean'] == 1:
+                        detected_type = 'boolean'
+                    elif or_types_counter['string'] == 1:
+                        detected_type = 'string'
+                    elif or_types_counter['array'] == 1:
+                        detected_type = 'array'
+                    elif or_types_counter['object'] == 1:
+                        detected_type = 'object'
+                    else:
+                        if or_types_counter['integer'] == 1 and or_types_counter['number'] == 0:
+                            detected_type = 'integer'
+                        if or_types_counter['number'] == 1 and or_types_counter['integer'] == 0:
+                            detected_type = 'number'
                 else:
                     detected_type = item['type']
             else:
