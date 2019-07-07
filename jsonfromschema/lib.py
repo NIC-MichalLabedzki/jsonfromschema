@@ -130,7 +130,7 @@ def generate_type(root, schema_root, section, optional_args):
                     detected_type = item['type']
             else:
                 if 'const' in item:
-                    if type(item['const']) is type('string'):
+                    if type(item['const']) is type('string') or type(item['const']) is type(u'unicode_string_for_python2'):
                         detected_type = 'string'
                     elif type(item['const']) is type(1.0):
                         detected_type = 'number'
