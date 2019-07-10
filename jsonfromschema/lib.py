@@ -244,7 +244,23 @@ def generate_type(root, schema_root, section, optional_args):
             data = value
         # TODO check invalid combination of *minimum/*maximum/multiple
     elif section_type == 'object':
-        data = generate_dict(root, section, optional_args)
+        if optional_args['maximum'] == True:
+            properties_list = section['properties']
+        else:
+            if 'required' in section:
+                properties_list = section['required']
+            else:
+                properties_list = []
+
+        data = {}
+        for property_name in properties_list:
+            property = section['properties'][property_name]
+            data[property_name] = generate_type(root, section, property, optional_args)
+
+        # TODO: process if-them-else
+        # TODO: process patternProperties
+        # TODO: minProperties
+        # TODO: maxProperties
     elif section_type == 'array':
         data = [0]
 
@@ -281,7 +297,7 @@ def generate_type(root, schema_root, section, optional_args):
     return data
 
 
-def generate_dict(root_name, schema_object, optional_args=None):
+def generate_dict(root_name, schema_dict, optional_args=None):
     def set_default(dict, key, value):
         if key not in dict:
             dict[key] = value
@@ -291,12 +307,16 @@ def generate_dict(root_name, schema_object, optional_args=None):
     set_default(optional_args, 'verbose', False)
     set_default(optional_args, 'no-default', False)
     set_default(optional_args, 'no-examples', False)
+    set_default(optional_args, 'maximum', False)
     set_default(optional_args, 'pkg_resource_root', None)
 
-    data = {}
-    for property_name in schema_object['properties']:
-        property = schema_object['properties'][property_name]
-        data[property_name] = generate_type(root_name, schema_object, property, optional_args)
+    return generate_type(root_name, schema_dict, schema_dict, optional_args)
+
+
+def generate_dict_from_text(root_name, schema_text, optional_args):
+    schema_dict = json.loads(schema_text)
+
+    data = generate_dict(root_name, schema_dict, optional_args)
 
     return data
 

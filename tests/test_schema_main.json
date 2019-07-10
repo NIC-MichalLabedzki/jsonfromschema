@@ -223,5 +223,19 @@
             }
         ]
     }
-  }
+  },
+  "if": {
+    "properties": { "boolean": { "const": true} }
+  },
+  "then": {
+    "properties": {
+        "if_then": { "const": "if_then" }
+    }
+  },
+  "else": {
+    "properties": {
+        "if_then": { "const": "if_else" }
+    }
+  },
+  "required": ["string"]
 }
