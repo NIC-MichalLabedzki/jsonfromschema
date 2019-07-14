@@ -6,7 +6,7 @@ import sys
 import pprint
 
 
-def generate_type(root, schema_root, section, optional_args):
+def generate_value(output_dict, output_json_pointer, root, schema_root, section, optional_args, save_as_list=False):
     def get_local_schema(schema_file, optional_args):
         with open(schema_file, 'r') as input:
             schema = json.load(input)
@@ -15,30 +15,66 @@ def generate_type(root, schema_root, section, optional_args):
                 pprint.pprint(schema)
         return schema
 
-    def get_section_from_fragment_path(where, schema):
+    def get_section_from_fragment_path(where, schema, is_output=False):
         i_schema = schema
-        for i_where in where[1:]:
+        if is_output:
+            where_set = where
+        else:
+            where_set = where[1:]
+
+        for i_where in where_set:
+            if is_output and i_where == 'properties':
+                continue
             if i_where not in i_schema:
                 return None
             i_schema = i_schema[i_where]
         return i_schema
 
+    def json_pointer_up(json_pointer):
+        path = output_json_pointer.split('/')[:-1]
+        return '/' + '/'.join(path)
+
+    def save_data(output_dict, output_json_pointer, value, save_as_list):
+        path = output_json_pointer.split('/')
+        i_output_dict = output_dict
+        if len(path) >= 2 and path[1] != '':
+            for i_path in path[:-1]:
+                if i_path not in i_output_dict:
+                    i_output_dict[i_path] = {}
+                i_output_dict = i_output_dict[i_path]
+        if path[-1] not in i_output_dict:
+            if save_as_list:
+                value = [value]
+            i_output_dict[path[-1]] = value
+        else:
+            if type(i_output_dict[path[-1]]) == type([]):
+                i_output_dict[path[-1]].append(value)
+            else:
+                old_value = i_output_dict[path[-1]]
+                i_output_dict[path[-1]] = [old_value, value]
+
+
     if 'const' in section:
-        return section['const']
+        data = section['const']
+        save_data(output_dict, output_json_pointer, data, save_as_list)
+        return
 
     if optional_args['no-default'] == False:
         if 'default' in section:
             data = section['default']
-            return data
+            save_data(output_dict, output_json_pointer, data, save_as_list)
+            return
 
     if optional_args['no-examples'] == False:
         if 'examples' in section:
             data = section['examples'][0]
-            return data
+            save_data(output_dict, output_json_pointer, data, save_as_list)
+            return
 
     if 'enum' in section:
         data = section['enum'][0]
-        return data
+        save_data(output_dict, output_json_pointer, data, save_as_list)
+        return
 
     if '$ref' in section:
         ref = section['$ref'].split('#')
@@ -49,7 +85,8 @@ def generate_type(root, schema_root, section, optional_args):
 
         if ref[0] == '':
             ref_section = get_section_from_fragment_path(ref_where, schema_root)
-            return generate_type(root, schema_root, ref_section, optional_args)
+            generate_value(output_dict, output_json_pointer, root, schema_root, ref_section, optional_args)
+            return
         else:
             if optional_args['pkg_resource_root'] is not None:
                 import pkg_resources
@@ -61,18 +98,18 @@ def generate_type(root, schema_root, section, optional_args):
                     pprint.pprint(subschema)
 
                 ref_section = get_section_from_fragment_path(ref_where, subschema)
-                data = generate_type(root, schema_root, ref_section, optional_args)
-                return data
+                generate_value(output_dict, output_json_pointer, root, schema_root, ref_section, optional_args)
+                return
             else:
                 abs_file = os.path.abspath(os.path.join(root, ref[0]))
                 if os.path.isfile(abs_file):
                     subschema = get_local_schema(abs_file, optional_args)
                     ref_section = get_section_from_fragment_path(ref_where, subschema)
-                    data = generate_type(root, schema_root, ref_section, optional_args)
-                    return data
+                    generate_value(output_dict, output_json_pointer, root, schema_root, ref_section, optional_args)
+                    return
                 else:
                     print('WARNING: root directory is URL or it does not exist; URL are not supported yet')
-                    return None
+                    return
 
     if 'type' in section:
         if isinstance(section['type'], list) and len(section['type']) >= 1:
@@ -87,8 +124,9 @@ def generate_type(root, schema_root, section, optional_args):
     if 'anyOf' in section:
         if len(section['anyOf']) < 1:
             print('WARNING: Invalid anyOf section, need at least one item')
-            return None
-        return generate_type(root, schema_root, section['anyOf'][0], optional_args)
+            return
+        generate_value(output_dict, output_json_pointer, root, schema_root, section['anyOf'][0], optional_args)
+        return
     if 'not' in section:
         # TODO
         print('WARNING: "not" is not supported yet')
@@ -182,11 +220,14 @@ def generate_type(root, schema_root, section, optional_args):
         if count_any['counter'] == 0:
             for i_type in count_typed:
                 if count_typed[i_type]['counter'] == 1 and (i_type == 'null' or i_type == 'boolean' or i_type == 'string' or i_type == 'array' or i_type == 'object'):
-                    return generate_type(root, schema_root, count_typed[i_type]['list'][0], optional_args)
+                    generate_value(output_dict, output_json_pointer, root, schema_root, count_typed[i_type]['list'][0], optional_args)
+                    return
                 if i_type == 'number' and 'integer' not in count_typed and count_typed[i_type]['counter'] == 1:
-                    return generate_type(root, schema_root, count_typed[i_type]['list'][0], optional_args)
+                    generate_value(output_dict, output_json_pointer, root, schema_root, count_typed[i_type]['list'][0], optional_args)
+                    return
                 if i_type == 'integer' and 'number' not in count_typed and count_typed[i_type]['counter'] == 1:
-                    return generate_type(root, schema_root, count_typed[i_type]['list'][0], optional_args)
+                    generate_value(output_dict, output_json_pointer, root, schema_root, count_typed[i_type]['list'][0], optional_args)
+                    return
 
         print('TYPED', count_typed)
         print('WARNING: complex "oneOf" is not supported yet')
@@ -252,34 +293,80 @@ def generate_type(root, schema_root, section, optional_args):
             else:
                 properties_list = []
 
-        data = {}
         for property_name in properties_list:
             property = section['properties'][property_name]
-            data[property_name] = generate_type(root, section, property, optional_args)
+            if output_json_pointer != '/':
+                new_output_json_pointer = output_json_pointer + '/' + property_name
+            else:
+                new_output_json_pointer = output_json_pointer + property_name
 
+            generate_value(output_dict, new_output_json_pointer, root, section, property, optional_args)
+
+        if 'if' in section:
+            if 'then' not in section and 'else' not in section:
+                print('WARNING: Invalid if-then-else properties in schema: there is no "then" and "else"')
+                return
+
+            print('iii', section['if'])
+            property = section['if']
+            if_section = section # TODO: output_dict
+            #print('ssssssssss', output_json_pointer, json_pointer_up(output_json_pointer))
+            json_pointer = '' + output_json_pointer
+            while 'const' not in property:
+                key = list(property.keys())[0]
+                property = property[key]
+                if_section = if_section[key]
+                if json_pointer == '/':
+                    json_pointer += key
+                else:
+                    json_pointer += '/' + key
+            if 'const' in property:
+                # TODO
+                pprint.pprint(output_dict)
+                if_output_section = get_section_from_fragment_path(json_pointer.split('/'), output_dict, True)
+                #print('uuuuuuuuuuuuuuuuuuuuuuuuuuuuuu', if_section, json_pointer, if_output_section)
+                if if_output_section is None:
+                    return
         # TODO: process if-them-else
         # TODO: process patternProperties
         # TODO: minProperties
         # TODO: maxProperties
+        # TODO: propertyNames {pattern: ""}
+        # TODO: dependencies
+        # TODO: additionalProperties for invalid schema generation
+        return
     elif section_type == 'array':
         data = [0]
 
+        min_items = 0
         if 'minItems' in section:
+            min_items = section['minItems']
             data = [0] * section['minItems']
 
         if 'items' in section:
             if type(section['items']) == type([]):
-                data = []
+                i_items = 0
                 for item in section['items']:
-                    data.append(generate_type(root, schema_root, item, optional_args))
+                    if i_items > min_items:
+                        break
+                    print('ooooiiiiii[]', item, min_items)
+                    generate_value(output_dict, output_json_pointer, root, schema_root, item, optional_args, save_as_list=True)
+                    i_items += 1
+                return 
             elif type(section['items']) == type({}):
-                    data = [generate_type(root, schema_root, section['items'], optional_args)]
-                    if 'minItems' in section:
-                        data = data * section['minItems']
+                print('ooooiiiiii{}', section['items'], min_items)
+                for i in range(min_items):
+                    print('yyy',i, output_json_pointer)
+                    generate_value(output_dict, output_json_pointer, root, schema_root, section['items'], optional_args, save_as_list=True)
+                if min_items == 0:
+                    data = []
+                else:
+                    return
             else:
                 print('WARNING: Unsupported array items type {type}'.format(type=type(section['items'])))
                 data = ['warning_unsupported_array_items_type']
-                return data
+                save_data(output_dict, output_json_pointer, data, save_as_list)
+                return
 
 
         # TODO items one
@@ -294,7 +381,9 @@ def generate_type(root, schema_root, section, optional_args):
         data = ['warning_unsupported_type']
         print('WARNING: Not supported type: {section_type}'.format(section_type=section_type))
 
-    return data
+    save_data(output_dict, output_json_pointer, data, save_as_list)
+
+    return
 
 
 def generate_dict(root_name, schema_dict, optional_args=None):
@@ -310,7 +399,10 @@ def generate_dict(root_name, schema_dict, optional_args=None):
     set_default(optional_args, 'maximum', False)
     set_default(optional_args, 'pkg_resource_root', None)
 
-    return generate_type(root_name, schema_dict, schema_dict, optional_args)
+    output_dict = {}
+    output_json_pointer = '/'
+    generate_value(output_dict, output_json_pointer, root_name, schema_dict, schema_dict, optional_args)
+    return output_dict['']
 
 
 def generate_dict_from_text(root_name, schema_text, optional_args):
