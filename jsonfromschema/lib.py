@@ -6,6 +6,21 @@ import sys
 import pprint
 
 
+def get_subschema_from_fragment_path(where, schema, is_output=False):
+    i_schema = schema
+    if is_output:
+        where_set = where
+    else:
+        where_set = where[1:]
+
+    for i_where in where_set:
+        if is_output and i_where == 'properties':
+            continue
+        if i_where not in i_schema:
+            return None
+        i_schema = i_schema[i_where]
+    return i_schema
+
 def generate_value(output_dict, output_json_pointer, root, schema_root, section, optional_args, save_as_list=False):
     def get_local_schema(schema_file, optional_args):
         with open(schema_file, 'r') as input:
@@ -14,21 +29,6 @@ def generate_value(output_dict, output_json_pointer, root, schema_root, section,
                 print('>>> Schema[{}] is:'.format(schema_file))
                 pprint.pprint(schema)
         return schema
-
-    def get_section_from_fragment_path(where, schema, is_output=False):
-        i_schema = schema
-        if is_output:
-            where_set = where
-        else:
-            where_set = where[1:]
-
-        for i_where in where_set:
-            if is_output and i_where == 'properties':
-                continue
-            if i_where not in i_schema:
-                return None
-            i_schema = i_schema[i_where]
-        return i_schema
 
     def json_pointer_up(json_pointer):
         path = output_json_pointer.split('/')[:-1]
@@ -84,7 +84,7 @@ def generate_value(output_dict, output_json_pointer, root, schema_root, section,
             ref_where = []
 
         if ref[0] == '':
-            ref_section = get_section_from_fragment_path(ref_where, schema_root)
+            ref_section = get_subschema_from_fragment_path(ref_where, schema_root)
             generate_value(output_dict, output_json_pointer, root, schema_root, ref_section, optional_args)
             return
         else:
@@ -97,14 +97,14 @@ def generate_value(output_dict, output_json_pointer, root, schema_root, section,
                     print('>>> Schema[{} in {}] is:'.format(path, root))
                     pprint.pprint(subschema)
 
-                ref_section = get_section_from_fragment_path(ref_where, subschema)
+                ref_section = get_subschema_from_fragment_path(ref_where, subschema)
                 generate_value(output_dict, output_json_pointer, root, schema_root, ref_section, optional_args)
                 return
             else:
                 abs_file = os.path.abspath(os.path.join(root, ref[0]))
                 if os.path.isfile(abs_file):
                     subschema = get_local_schema(abs_file, optional_args)
-                    ref_section = get_section_from_fragment_path(ref_where, subschema)
+                    ref_section = get_subschema_from_fragment_path(ref_where, subschema)
                     generate_value(output_dict, output_json_pointer, root, schema_root, ref_section, optional_args)
                     return
                 else:
@@ -323,7 +323,7 @@ def generate_value(output_dict, output_json_pointer, root, schema_root, section,
             if 'const' in property:
                 # TODO
                 pprint.pprint(output_dict)
-                if_output_section = get_section_from_fragment_path(json_pointer.split('/'), output_dict, True)
+                if_output_section = get_subschema_from_fragment_path(json_pointer.split('/'), output_dict, True)
                 #print('uuuuuuuuuuuuuuuuuuuuuuuuuuuuuu', if_section, json_pointer, if_output_section)
                 if if_output_section is None:
                     return
@@ -398,10 +398,17 @@ def generate_dict(root_name, schema_dict, optional_args=None):
     set_default(optional_args, 'no-examples', False)
     set_default(optional_args, 'maximum', False)
     set_default(optional_args, 'pkg_resource_root', None)
+    set_default(optional_args, 'subschema', None)
+
+    if optional_args['subschema'] is None:
+        subschema_dict = schema_dict
+    else:
+        subschema_path = optional_args['subschema'].split('/')
+        subschema_dict = get_subschema_from_fragment_path(subschema_path, schema_dict)
 
     output_dict = {}
     output_json_pointer = '/'
-    generate_value(output_dict, output_json_pointer, root_name, schema_dict, schema_dict, optional_args)
+    generate_value(output_dict, output_json_pointer, root_name, schema_dict, subschema_dict, optional_args)
     return output_dict['']
 
 
