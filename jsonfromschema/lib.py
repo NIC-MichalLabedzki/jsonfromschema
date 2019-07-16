@@ -328,10 +328,9 @@ def generate_value(output_dict, output_json_pointer, root, schema_root, section,
                 print('WARNING: Invalid if-then-else properties in schema: there is no "then" and "else"')
                 return
 
-            print('iii', section['if'])
             property = section['if']
             if_section = section # TODO: output_dict
-            #print('ssssssssss', output_json_pointer, json_pointer_up(output_json_pointer))
+
             json_pointer = '' + output_json_pointer
             while 'const' not in property:
                 key = list(property.keys())[0]
@@ -342,12 +341,30 @@ def generate_value(output_dict, output_json_pointer, root, schema_root, section,
                 else:
                     json_pointer += '/' + key
             if 'const' in property:
-                # TODO
-                pprint.pprint(output_dict)
-                if_output_section = get_subschema_from_fragment_path(json_pointer.split('/'), output_dict, True)
-                #print('uuuuuuuuuuuuuuuuuuuuuuuuuuuuuu', if_section, json_pointer, if_output_section)
-                if if_output_section is None:
+                if_output_value = get_subschema_from_fragment_path(json_pointer.split('/'), output_dict, True)
+
+                if if_output_value is None:
                     return
+
+                if if_output_value == property['const']:
+                    # TODO: properties may not exist and it may be not object
+                    for prop in section['then']['properties']:
+                        if output_json_pointer != '/':
+                            new_output_json_pointer = output_json_pointer + '/' + prop
+                        else:
+                            new_output_json_pointer = output_json_pointer + prop
+
+                        generate_value(output_dict, new_output_json_pointer, root, section, section['then']['properties'][prop], optional_args)
+                else:
+                    # TODO: properties may not exist and it may be not object
+                    for prop in section['else']['properties']:
+                        if output_json_pointer != '/':
+                            new_output_json_pointer = output_json_pointer + '/' + prop
+                        else:
+                            new_output_json_pointer = output_json_pointer + prop
+
+                        generate_value(output_dict, new_output_json_pointer, root, section, section['else']['properties'][prop], optional_args)
+
         # TODO: process if-them-else
         # TODO: process patternProperties
         # TODO: minProperties
@@ -370,14 +387,11 @@ def generate_value(output_dict, output_json_pointer, root, schema_root, section,
                 for item in section['items']:
                     if i_items > min_items:
                         break
-                    print('ooooiiiiii[]', item, min_items)
                     generate_value(output_dict, output_json_pointer, root, schema_root, item, optional_args, save_as_list=True)
                     i_items += 1
                 return 
             elif type(section['items']) == type({}):
-                print('ooooiiiiii{}', section['items'], min_items)
                 for i in range(min_items):
-                    print('yyy',i, output_json_pointer)
                     generate_value(output_dict, output_json_pointer, root, schema_root, section['items'], optional_args, save_as_list=True)
                 if min_items == 0:
                     data = []

@@ -225,7 +225,7 @@
     }
   },
   "if": {
-    "properties": { "boolean": { "const": true} }
+    "properties": { "boolean": { "const": false} }
   },
   "then": {
     "properties": {
