@@ -71,7 +71,7 @@ def main(args=sys.argv[1:]):
     if args.verbose:
         print('>>> Output is:')
         pprint.pprint(output_dict)
-    output_json = json.dumps(output_dict)
+    output_json = json.dumps(output_dict, indent=4)
     output_fp.write(output_json)
     if output_fp != sys.stdout:
         output_fp.close()
