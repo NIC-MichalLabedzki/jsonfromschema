@@ -91,6 +91,18 @@ def generate_value(output_dict, output_json_pointer, root, schema_root, section,
             if optional_args['pkg_resource_root'] is not None:
                 import pkg_resources
                 path = '/'.join(optional_args['pkg_resource_root'].split('/')[0:-1]) + '/' + ref[0]
+
+#                xpath = path.split('/')
+#                for i_path, item in enumerate(xpath):
+#                    if xpath[i_path] == '.':
+#                        del xpath[i_path]
+#                    if xpath[i_path] == '..':
+#                        del xpath[i_path]
+#                        del xpath[i_path - 1]
+#                path = '/'.join(xpath)
+
+                old_path = optional_args['pkg_resource_root']
+                optional_args['pkg_resource_root'] = path
                 subschema_text = pkg_resources.resource_string(root, path).decode('utf-8')
                 subschema = json.loads(subschema_text)
                 if optional_args['verbose']:
@@ -99,13 +111,15 @@ def generate_value(output_dict, output_json_pointer, root, schema_root, section,
 
                 ref_section = get_subschema_from_fragment_path(ref_where, subschema)
                 generate_value(output_dict, output_json_pointer, root, schema_root, ref_section, optional_args)
+                optional_args['pkg_resource_root'] = old_path
                 return
             else:
                 abs_file = os.path.abspath(os.path.join(root, ref[0]))
+                ref_root = os.path.dirname(abs_file)
                 if os.path.isfile(abs_file):
                     subschema = get_local_schema(abs_file, optional_args)
                     ref_section = get_subschema_from_fragment_path(ref_where, subschema)
-                    generate_value(output_dict, output_json_pointer, root, schema_root, ref_section, optional_args)
+                    generate_value(output_dict, output_json_pointer, ref_root, schema_root, ref_section, optional_args)
                     return
                 else:
                     print('WARNING: root directory is URL or it does not exist; URL are not supported yet')
@@ -229,7 +243,14 @@ def generate_value(output_dict, output_json_pointer, root, schema_root, section,
                     generate_value(output_dict, output_json_pointer, root, schema_root, count_typed[i_type]['list'][0], optional_args)
                     return
 
+        # NOTE: there is 'anyType' found but I believe it does not match null or boolean, because they are trivial and are value as keywords
+        for i_type in ['null', 'boolean']:
+            if count_typed[i_type]['counter'] == 1:
+                generate_value(output_dict, output_json_pointer, root, schema_root, count_typed[i_type]['list'][0], optional_args)
+                return
+
         print('TYPED', count_typed)
+        print('TYPED any', count_any['counter'])
         print('WARNING: complex "oneOf" is not supported yet')
 
     # types from specification
@@ -412,7 +433,7 @@ def generate_dict(root_name, schema_dict, optional_args=None):
     return output_dict['']
 
 
-def generate_dict_from_text(root_name, schema_text, optional_args):
+def generate_dict_from_text(root_name, schema_text, optional_args=None):
     schema_dict = json.loads(schema_text)
 
     data = generate_dict(root_name, schema_dict, optional_args)
@@ -420,13 +441,13 @@ def generate_dict_from_text(root_name, schema_text, optional_args):
     return data
 
 
-def generate_dict_from_file(schema_file, optional_args):
+def generate_dict_from_file(schema_file, optional_args=None):
     root_file = os.path.abspath(schema_file)
     root_dir = os.path.dirname(root_file)
 
     with open(root_file, 'r') as input:
         schema = json.load(input)
-        if optional_args['verbose']:
+        if optional_args is not None and optional_args['verbose']:
             print('>>> Schema is:')
             pprint.pprint(schema)
     input.close()
@@ -435,7 +456,7 @@ def generate_dict_from_file(schema_file, optional_args):
     return data
 
 
-def generate_dict_from_package(package, path, optional_args):
+def generate_dict_from_package(package, path, optional_args=None):
     import pkg_resources
 
     def set_default(dict, key, value):
@@ -444,6 +465,7 @@ def generate_dict_from_package(package, path, optional_args):
     if optional_args == None:
         optional_args = {}
 
+    set_default(optional_args, 'verbose', False)
     set_default(optional_args, 'pkg_resource_root', path)
 
     schema_text = pkg_resources.resource_string(package, path).decode('utf-8')
