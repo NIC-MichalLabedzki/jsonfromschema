@@ -334,6 +334,10 @@ def generate_value(output_dict, output_json_pointer, root, schema_root, section,
 
             generate_value(output_dict, new_output_json_pointer, root, section, property, optional_args)
 
+        if properties_list == []:
+            data = {}
+            save_data(output_dict, output_json_pointer, data, save_as_list)
+
         if 'if' in section:
             if 'then' not in section and 'else' not in section:
                 print('WARNING: Invalid if-then-else properties in schema: there is no "then" and "else"')
