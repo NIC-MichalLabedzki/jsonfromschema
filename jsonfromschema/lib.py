@@ -399,14 +399,15 @@ def generate_value(output_dict, output_json_pointer, root, schema_root, section,
         if 'items' in section:
             if type(section['items']) == type([]):
                 i_items = 0
-                for item in section['items']:
-                    if i_items > min_items:
-                        break
-                    generate_value(output_dict, output_json_pointer, root, schema_root, item, optional_args, save_as_list=True)
-                    i_items += 1
-                return 
+                for _ in range(min_items):
+                    for item in section['items']:
+                        if i_items > min_items:
+                            break
+                        generate_value(output_dict, output_json_pointer, root, schema_root, item, optional_args, save_as_list=True)
+                        i_items += 1
+                return
             elif type(section['items']) == type({}):
-                for i in range(min_items):
+                for _ in range(min_items):
                     generate_value(output_dict, output_json_pointer, root, schema_root, section['items'], optional_args, save_as_list=True)
                 if min_items == 0:
                     data = []
