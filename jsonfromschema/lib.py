@@ -235,6 +235,14 @@ def generate_value(output_dict, output_json_pointer, root, schema_root, section,
 
         # last choice
         if count_any['counter'] == 0:
+            if optional_args['maximum'] == False:
+                for i_type in count_typed:
+                    if count_typed[i_type]['counter'] == 1 and i_type == 'null':
+                        generate_value(output_dict, output_json_pointer, root, schema_root, count_typed[i_type]['list'][0], optional_args)
+                        return
+
+            # TODO: better --maximum, try object, then array, string, number, boolean, null
+
             for i_type in count_typed:
                 if count_typed[i_type]['counter'] == 1 and (i_type == 'null' or i_type == 'boolean' or i_type == 'string' or i_type == 'array' or i_type == 'object'):
                     generate_value(output_dict, output_json_pointer, root, schema_root, count_typed[i_type]['list'][0], optional_args)
