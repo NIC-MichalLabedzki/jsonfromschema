@@ -17,6 +17,9 @@ def get_subschema_from_fragment_path(where, schema, is_output=False):
         if is_output and i_where == 'properties':
             continue
         if i_where not in i_schema:
+            if type(i_schema) == type([]) and i_where.isdigit() and i_schema[int(i_where)] != None:
+                i_schema = i_schema[int(i_where)]
+                continue
             return None
         i_schema = i_schema[i_where]
     return i_schema
