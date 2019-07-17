@@ -1,241 +1,263 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Types",
-  "type": "object",
-  "definitions": {
-    "ref_string": {
-      "type": "string",
-      "default": "ref_string 1"
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Types",
+    "type": "object",
+    "definitions": {
+        "ref_string": {
+        "type": "string",
+        "default": "ref_string 1"
+        },
+        "test_complicated_oneOf": {
+            "type": "number",
+            "oneOf": [
+                {
+                    "multipleOf": 3,
+                    "default": 15
+                },
+                {
+                    "multipleOf": 5,
+                    "default": 15
+                }
+            ]
+        }
     },
-    "test_complicated_oneOf": {
+    "properties": {
+        "string": {
+        "type": "string"
+        },
+        "string_default": {
+        "type": "string",
+        "default": "foo"
+        },
+        "integer_minimum": {
+        "type": "integer",
+        "minimum": 0
+        },
+        "integer_exclusive_minimum": {
+        "type": "integer",
+        "multipleOf": 10,
+        "exclusiveMinimum": 40
+        },
+        "number_minimum": {
         "type": "number",
-        "oneOf": [
-            {
-                "multipleOf": 3,
-                "default": 15
-            },
-            {
-                "multipleOf": 5,
-                "default": 15
+        "minimum": 2
+        },
+        "number_exclusive_minimum": {
+        "type": "number",
+        "exclusiveMinimum": 2
+        },
+        "number_exclusive_minimum": {
+        "type": "number",
+        "multipleOf": 10,
+        "exclusiveMinimum": 40
+        },
+        "string_min_lenght": {
+            "type": "string",
+            "minLength": 3
+        },
+        "string_enum": {
+            "type": "string",
+            "enum": [
+                "a1",
+                "a2",
+                "a3"
+            ]
+        },
+        "null": {
+        "type": "null"
+        },
+        "boolean": {
+        "type": "boolean",
+        "default": true
+        },
+        "object": {
+            "type": "object",
+            "properties": {
+                "string": {
+                    "type": "string",
+                    "default": "son of J"
+                }
             }
-        ]
-    }
-  },
-  "properties": {
-    "string": {
-      "type": "string"
-    },
-    "string_default": {
-      "type": "string",
-      "default": "foo"
-    },
-    "integer_minimum": {
-      "type": "integer",
-      "minimum": 0
-    },
-    "integer_exclusive_minimum": {
-      "type": "integer",
-      "multipleOf": 10,
-      "exclusiveMinimum": 40
-    },
-    "number_minimum": {
-      "type": "number",
-      "minimum": 2
-    },
-    "number_exclusive_minimum": {
-      "type": "number",
-      "exclusiveMinimum": 2
-    },
-    "number_exclusive_minimum": {
-      "type": "number",
-      "multipleOf": 10,
-      "exclusiveMinimum": 40
-    },
-    "string_min_lenght": {
-        "type": "string",
-        "minLength": 3
-    },
-    "string_enum": {
-        "type": "string",
-        "enum": [
-            "a1",
-            "a2",
-            "a3"
-        ]
-    },
-    "null": {
-      "type": "null"
-    },
-    "boolean": {
-      "type": "boolean",
-      "default": true
-    },
-    "object": {
-        "type": "object",
-        "properties": {
-            "string": {
-                "type": "string",
-                "default": "son of J"
+        },
+        "array": {
+            "type": "array"
+        },
+        "array_item_number": {
+            "type": "array",
+            "items": {
+                "type": "number"
             }
-        }
-    },
-    "array": {
-        "type": "array"
-    },
-    "array_item_number": {
-        "type": "array",
-        "items": {
-            "type": "number"
-        }
-    },
-    "array_item_number_min_items_0": {
-        "type": "array",
-        "minItems": 0,
-        "items": {
-            "type": "number"
-        }
-    },
-    "array_item_number_min_items_2": {
-        "type": "array",
-        "minItems": 2,
-        "items": {
-            "type": "number"
-        }
-    },
-    "array_item_string": {
-        "type": "array",
-        "items": {
-            "type": "string"
-        }
-    },
-    "array_item_string_list": {
-        "type": "array",
-        "items": [
-            {
+        },
+        "array_item_number_min_items_0": {
+            "type": "array",
+            "minItems": 0,
+            "items": {
+                "type": "number"
+            }
+        },
+        "array_item_number_min_items_2": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+                "type": "number"
+            }
+        },
+        "array_item_string": {
+            "type": "array",
+            "items": {
                 "type": "string"
-            },
-            {
-                "type": "integer"
             }
-        ]
-    },
-    "ref_string_1": {
-        "$ref": "#/definitions/ref_string"
-    },
-    "ref_string_2": {
-        "$ref": "#/definitions/ref_string"
-    },
-    "ref_external_file_string": {
-        "$ref": "./test_subschema.json"
-    },
-    "ref_external_file_string_in_definitions": {
-        "$ref": "./test_subschema.json#/definitions/external_string"
-    },
-    "test_anyOf": {
-        "type": "number",
-        "anyOf": [
-            { "default": 11 },
-            { "default": 22 }
-        ]
-    },
-    "oneOf_null_number": {
-        "oneOf": [
-            {
-                "type": "number",
-                "multipleOf": 3,
-                "default": 15
+        },
+        "array_item_string_list": {
+            "type": "array",
+            "items": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "integer"
+                }
+            ]
+        },
+        "ref_string_1": {
+            "$ref": "#/definitions/ref_string"
+        },
+        "ref_string_2": {
+            "$ref": "#/definitions/ref_string"
+        },
+        "ref_external_file_string": {
+            "$ref": "./test_subschema.json"
+        },
+        "ref_external_file_string_in_definitions": {
+            "$ref": "./test_subschema.json#/definitions/external_string"
+        },
+        "test_anyOf": {
+            "type": "number",
+            "anyOf": [
+                { "default": 11 },
+                { "default": 22 }
+            ]
+        },
+        "oneOf_null_number": {
+            "oneOf": [
+                {
+                    "type": "number",
+                    "multipleOf": 3,
+                    "default": 15
+                },
+                {
+                    "type": "null"
+                }
+            ]
+        },
+        "oneOf_bool_number": {
+            "oneOf": [
+                {
+                    "type": "number",
+                    "multipleOf": 3,
+                    "default": 15
+                },
+                {
+                    "type": "boolean"
+                }
+            ]
+        },
+        "examples_and_default": {
+            "default": 10,
+            "examples": [11, 12]
+        },
+        "examples": {
+            "examples": [11, 12]
+        },
+        "const": {
+            "const": "example_const"
+        },
+        "enum_like_const": {
+            "enum": ["example_enum_like_const"]
+        },
+        "enum_2": {
+            "enum": ["enum1", "enum2"]
+        },
+        "oneOf_const": {
+            "oneOf": [
+                {
+                    "const": "string"
+                },
+                {
+                    "const": 0
+                },
+                {
+                    "const": 0.1
+                },
+                {
+                    "const": { "type": "object" }
+                },
+                {
+                    "const": { "type": "array" }
+                },
+                {
+                    "const": true
+                },
+                {
+                    "const": null
+                }
+            ]
+        },
+        "oneOf_two_string_consts": {
+            "oneOf": [
+                {
+                    "const": "string1"
+                },
+                {
+                    "const": "string2"
+                }
+            ]
+        },
+        "oneOf_multitypes": {
+            "oneOf": [
+                {
+                    "const": "const_string"
+                },
+                {
+                    "type": ["null", "boolean"]
+                }
+            ]
+        },
+        "properties_if_then_else": {
+            "type": "object",
+            "properties": {
+                "ifus": {
+                    "const": "go_else"
+                }
             },
-            {
-                "type": "null"
+            "if": {
+                "properties": { "ifus": { "const": "this_if_always_fail"} }
+            },
+            "then": {
+                "properties": {
+                    "if_then": { "const": "prop_if_then" }
+                }
+            },
+            "else": {
+                "properties": {
+                    "if_then": { "const": "prop_if_else" }
+                }
             }
-        ]
+        }
     },
-    "oneOf_bool_number": {
-        "oneOf": [
-            {
-                "type": "number",
-                "multipleOf": 3,
-                "default": 15
-            },
-            {
-                "type": "boolean"
-            }
-        ]
+   "if": {
+        "properties": { "boolean": { "const": false} }
     },
-    "examples_and_default": {
-        "default": 10,
-        "examples": [11, 12]
+    "then": {
+        "properties": {
+            "if_then": { "const": "if_then" }
+        }
     },
-    "examples": {
-        "examples": [11, 12]
+    "else": {
+        "properties": {
+            "if_then": { "const": "if_else" }
+        }
     },
-    "const": {
-        "const": "example_const"
-    },
-    "enum_like_const": {
-        "enum": ["example_enum_like_const"]
-    },
-    "enum_2": {
-        "enum": ["enum1", "enum2"]
-    },
-    "oneOf_const": {
-        "oneOf": [
-            {
-                "const": "string"
-            },
-            {
-                "const": 0
-            },
-            {
-                "const": 0.1
-            },
-            {
-                "const": { "type": "object" }
-            },
-            {
-                "const": { "type": "array" }
-            },
-            {
-                "const": true
-            },
-            {
-                "const": null
-            }
-        ]
-    },
-    "oneOf_two_string_consts": {
-        "oneOf": [
-            {
-                "const": "string1"
-            },
-            {
-                "const": "string2"
-            }
-        ]
-    },
-    "oneOf_multitypes": {
-        "oneOf": [
-            {
-                "const": "const_string"
-            },
-            {
-                "type": ["null", "boolean"]
-            }
-        ]
-    }
-  },
-  "if": {
-    "properties": { "boolean": { "const": false} }
-  },
-  "then": {
-    "properties": {
-        "if_then": { "const": "if_then" }
-    }
-  },
-  "else": {
-    "properties": {
-        "if_then": { "const": "if_else" }
-    }
-  },
-  "required": ["string"]
+
+    "required": ["string"]
 }
