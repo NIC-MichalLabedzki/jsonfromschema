@@ -24,7 +24,7 @@ def get_subschema_from_fragment_path(where, schema, is_output=False):
         i_schema = i_schema[i_where]
     return i_schema
 
-def generate_value(output_dict, output_json_pointer, root, schema_root, section, optional_args, save_as_list=False):
+def generate_value(output_dict, output_json_pointer, root, schema_root, section, optional_args):
     def get_local_schema(schema_file, optional_args):
         with open(schema_file, 'r') as input:
             schema = json.load(input)
@@ -37,46 +37,49 @@ def generate_value(output_dict, output_json_pointer, root, schema_root, section,
         path = output_json_pointer.split('/')[:-1]
         return '/' + '/'.join(path)
 
-    def save_data(output_dict, output_json_pointer, value, save_as_list):
+    def save_data(output_dict, output_json_pointer, value):
         path = output_json_pointer.split('/')
         i_output_dict = output_dict
+
         if len(path) >= 2 and path[1] != '':
             for i_path in path[:-1]:
-                if i_path not in i_output_dict:
-                    i_output_dict[i_path] = {}
-                i_output_dict = i_output_dict[i_path]
-        if path[-1] not in i_output_dict:
-            if save_as_list:
-                value = [value]
-            i_output_dict[path[-1]] = value
+                if type(i_output_dict) == type([]) and i_path.isdigit():
+                    index_path = int(i_path)
+                    if len(i_output_dict) - 1 < index_path:
+                        i_output_dict.insert(index_path, {})
+                else:
+                    index_path = i_path
+                    if index_path not in i_output_dict:
+                        i_output_dict[index_path] = {}
+
+                i_output_dict = i_output_dict[index_path]
+
+        if type(i_output_dict) == type([]):
+            i_output_dict.insert(int(path[-1]), value)
         else:
-            if type(i_output_dict[path[-1]]) == type([]):
-                i_output_dict[path[-1]].append(value)
-            else:
-                old_value = i_output_dict[path[-1]]
-                i_output_dict[path[-1]] = [old_value, value]
+            i_output_dict[path[-1]] = value
 
 
     if 'const' in section:
         data = section['const']
-        save_data(output_dict, output_json_pointer, data, save_as_list)
+        save_data(output_dict, output_json_pointer, data)
         return
 
     if optional_args['no-default'] == False:
         if 'default' in section:
             data = section['default']
-            save_data(output_dict, output_json_pointer, data, save_as_list)
+            save_data(output_dict, output_json_pointer, data)
             return
 
     if optional_args['no-examples'] == False:
         if 'examples' in section:
             data = section['examples'][0]
-            save_data(output_dict, output_json_pointer, data, save_as_list)
+            save_data(output_dict, output_json_pointer, data)
             return
 
     if 'enum' in section:
         data = section['enum'][0]
-        save_data(output_dict, output_json_pointer, data, save_as_list)
+        save_data(output_dict, output_json_pointer, data)
         return
 
     if '$ref' in section:
@@ -336,7 +339,7 @@ def generate_value(output_dict, output_json_pointer, root, schema_root, section,
 
         if properties_list == []:
             data = {}
-            save_data(output_dict, output_json_pointer, data, save_as_list)
+            save_data(output_dict, output_json_pointer, data)
 
         if 'if' in section:
             if 'then' not in section and 'else' not in section:
@@ -396,6 +399,8 @@ def generate_value(output_dict, output_json_pointer, root, schema_root, section,
             min_items = section['minItems']
             data = [0] * section['minItems']
 
+            save_data(output_dict, output_json_pointer, [])
+
         if 'items' in section:
             if type(section['items']) == type([]):
                 i_items = 0
@@ -403,12 +408,25 @@ def generate_value(output_dict, output_json_pointer, root, schema_root, section,
                     for item in section['items']:
                         if i_items > min_items:
                             break
-                        generate_value(output_dict, output_json_pointer, root, schema_root, item, optional_args, save_as_list=True)
+                        if output_json_pointer == '/':
+                            new_output_json_pointer = output_json_pointer + str(i_items)
+                        else:
+                            new_output_json_pointer = output_json_pointer + '/' + str(i_items)
+                        generate_value(output_dict, new_output_json_pointer, root, schema_root, item, optional_args)
                         i_items += 1
-                return
+                if min_items == 0:
+                    data = []
+                else:
+                    return
             elif type(section['items']) == type({}):
+                i_items = 0
                 for _ in range(min_items):
-                    generate_value(output_dict, output_json_pointer, root, schema_root, section['items'], optional_args, save_as_list=True)
+                    if output_json_pointer == '/':
+                        new_output_json_pointer = output_json_pointer + str(i_items)
+                    else:
+                        new_output_json_pointer = output_json_pointer + '/' + str(i_items)
+                    generate_value(output_dict, new_output_json_pointer, root, schema_root, section['items'], optional_args)
+                    i_items += 1
                 if min_items == 0:
                     data = []
                 else:
@@ -416,7 +434,7 @@ def generate_value(output_dict, output_json_pointer, root, schema_root, section,
             else:
                 print('WARNING: Unsupported array items type {type}'.format(type=type(section['items'])))
                 data = ['warning_unsupported_array_items_type']
-                save_data(output_dict, output_json_pointer, data, save_as_list)
+                save_data(output_dict, output_json_pointer, data)
                 return
 
 
@@ -432,7 +450,7 @@ def generate_value(output_dict, output_json_pointer, root, schema_root, section,
         data = ['warning_unsupported_type']
         print('WARNING: Not supported type: {section_type}'.format(section_type=section_type))
 
-    save_data(output_dict, output_json_pointer, data, save_as_list)
+    save_data(output_dict, output_json_pointer, data)
 
     return
 

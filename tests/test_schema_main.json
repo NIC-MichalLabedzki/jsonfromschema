@@ -108,6 +108,14 @@
                 "type": "string"
             }
         },
+        "array_item_string_min1": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "default": "item1"
+            },
+            "minItems": 1
+        },
         "array_item_string_list": {
             "type": "array",
             "items": [
