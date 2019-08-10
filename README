@@ -1,100 +1,186 @@
+==============
+jsonfromschema
+==============
+
+IN SHORT
+--------
+
+``jsonfromschema`` is used to generate JSON data (file *.json) from JSON Schema (*.json, see https://json-schema.org)
+Project is written in Python for Python purposes, but it is also stand-alone tool.
+
 SPDX-License-Identifier: 0BSD
 
 Project name: jsonfromschema
 License: 0BSD / Free Public License 1.0.0
 More information about license: https://opensource.org/licenses/0BSD
 
-"jsonfromschema" is used to generate JSON data (file *.json) from JSON Schema (*.json, see https://json-schema.org)
-Project is written in Python for Python purposes, but it is also stand-alone tool.
 
 
-NON-INSTALL:
-git clone git@github.com:NIC-MichalLabedzki/jsonfromschema.git
+NON-INSTALL
+-----------
+
+.. code-block:: bash
+
+    git clone git@github.com:NIC-MichalLabedzki/jsonfromschema.git
 
 You can run it from sources without any dependancies* (python and some modules delivered with it)
 
-python ./jsonfromschema
+.. code-block:: bash
+
+    python ./jsonfromschema
 
 See:
-python ./jsonfromschema --help
+
+.. code-block:: bash
+
+    python ./jsonfromschema --help
 
 See CLI section for more details.
 
 
-INSTALLATION:
-pip install jsonfromschema # TODO
+INSTALLATION
+------------
+
+.. code-block:: bash
+
+    pip install jsonfromschema
 
 or
 
-pip install -e git@github.com:NIC-MichalLabedzki/jsonfromschema.git
-    or
+.. code-block:: bash
+
+    pip install -e git@github.com:NIC-MichalLabedzki/jsonfromschema.git
+
+or
+
+.. code-block:: bash
+
     pip install -e https://github.com/NIC-MichalLabedzki/jsonfromschema.git
 
 or
 
-git clone git@github.com:NIC-MichalLabedzki/jsonfromschema.git
-cd jsonfromschema
-python setup.py # or pip install -e .
+.. code-block:: bash
+
+    git clone git@github.com:NIC-MichalLabedzki/jsonfromschema.git
+    cd jsonfromschema
+    python setup.py # or pip install -e .
 
 
-INTERFACE:
-There are two kind of interfaces: CLI and Python module.
+INTERFACE
+---------
 
-CLI:
+There are two kind of interfaces: ``CLI`` and ``Python module``.
+
+CLI
+~~~
+
 CLI is Command Line Interface. So you have tool called: jsonfromschema
 
-$ jsonfromschema --help
-usage: . [-h] [-v] [-w [VALIDATE]] [--no-default] [--no-examples] [--maximum]
-         [--subschema SUBSCHEMA] [--from-python-package FROM_PYTHON_PACKAGE]
-         schema output
+.. code-block:: bash
 
-Generate JSON data file (*.json) from JSON Schema
+    $ jsonfromschema --help
+    usage: jsonfromschema [-h] [-v] [-w [VALIDATE]] [--no-default] [--no-examples] [--maximum]
+             [--subschema SUBSCHEMA] [--from-python-package FROM_PYTHON_PACKAGE]
+             schema output
 
-positional arguments:
-  schema                path to JSON Schema file or python packages resource
-                        [--from-python-package]
-  output                path to JSON data output file
+    Generate JSON data file (*.json) from JSON Schema
 
-optional arguments:
-  -h, --help            show this help message and exit
-  -v, --verbose         verbose mode
-  -w [VALIDATE], --validate [VALIDATE]
-                        use jsonschema to validate output and check if schema
-                        is valid [3,4,6,7 (default)]
-  --no-default          do not use 'default' fields in jsonschema
-  --no-examples         do not use 'default' fields in jsonschema
-  --maximum             generate as complex json as possible (by
-                        implementation); for example ignore "required" and
-                        favor "object" over less complicated fields
-  --subschema SUBSCHEMA
-                        extract subschema only by this json fragment pointer
-  --from-python-package FROM_PYTHON_PACKAGE
-                        'schema' is path to python package resource, this
-                        option needs package name as argument
+    positional arguments:
+    schema                path to JSON Schema file or python packages resource
+                            [--from-python-package]
+    output                path to JSON data output file
+
+    optional arguments:
+    -h, --help            show this help message and exit
+    -v, --verbose         verbose mode
+    -w [VALIDATE], --validate [VALIDATE]
+                            use jsonschema to validate output and check if schema
+                            is valid [3,4,6,7 (default)]
+    --no-default          do not use 'default' fields in jsonschema
+    --no-examples         do not use 'default' fields in jsonschema
+    --maximum             generate as complex json as possible (by
+                            implementation); for example ignore "required" and
+                            favor "object" over less complicated fields
+    --subschema SUBSCHEMA
+                            extract subschema only by this json fragment pointer
+    --from-python-package FROM_PYTHON_PACKAGE
+                            'schema' is path to python package resource, this
+                            option needs package name as argument
 
 
 Some examples:
-$ jsonfromschema input_schema.json output_json_data.json
+
+.. code-block:: bash
+
+    $ jsonfromschema input_schema.json output_json_data.json
 
 Verbose:
-$ jsonfromschema input_schema.json output_json_data.json -v
+
+.. code-block:: bash
+
+    $ jsonfromschema input_schema.json output_json_data.json -v
 
 Validate output:
 It use "jsonschema" module (pip install jsonschema) to validate output json to be valid with given schema.
-$ jsonfromschema input_schema.json output_json_data.json -w
+
+.. code-block:: bash
+
+    $ jsonfromschema input_schema.json output_json_data.json -w
 
 Generate subschema:
 Use JSON pointer (schema side) to generate only part of schema:
-$ jsonfromschema tests/test_schema_main.json.json output.json -w --subschema=/properties/string_default
-$ cat output.json
-"foo"
+
+.. code-block:: bash
+
+    $ jsonfromschema tests/test_schema_main.json.json output.json -w --subschema=/properties/string_default
+    $ cat output.json
+    "foo"
 
 Use JSON Schema resources from some python packages:
-$ jsonfromschema ../tests/test_schema_main.json output.json -vw --subschema=/properties/string_default --from-python-package jsonfromschema
-$ cat output.json
-"foo"
 
-TODO:
+.. code-block:: bash
+
+    $ jsonfromschema ../tests/test_schema_main.json output.json -vw --subschema=/properties/string_default --from-python-package jsonfromschema
+    $ cat output.json
+    "foo"
+
+Python Module
+~~~~~~~~~~~~~
+
+``API is not stable right now.``
+
+.. code-block:: python
+
+    import jsonfromschema.lib
+
+.. code-block:: python
+
+    generate_dict_from_text(root_name, schema_text, optional_args=None)
+    generate_dict_from_file(schema_file, optional_args=None)
+    generate_dict_from_package(package, path, optional_args=None)
+
+
+optional_args:
+    Default values are:
+
+.. code-block:: python
+
+        {
+        'verbose': False,
+        'no-default': False,
+        'no-examples': False,
+        'maximum': False,
+        'pkg_resource_root': None,
+        'subschema': None,
+        }
+
+Where:
+    ``pkg_resource_root`` is package name, for example "jsonschema"
+
+
+TODO
+----
+
 1. JsonSchema Draft-7 support (in progress)
 2. Check Draft-4 support
 3. Section about Contributions

@@ -3,3 +3,7 @@ python3 setup.py sdist bdist_wheel
 
 Upload:
 python3 -m twine upload dist/*
+
+Generate python RST doc (README):
+rst2html5.py README /tmp/jsonfromschema.html
+
