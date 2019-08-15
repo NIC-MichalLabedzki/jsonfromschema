@@ -244,7 +244,11 @@ def generate_value(output_dict, output_json_pointer, root, schema_root, section,
                         generate_value(output_dict, output_json_pointer, root, schema_root, count_typed[i_type]['list'][0], optional_args)
                         return
 
-            # TODO: better --maximum, try object, then array, string, number, boolean, null
+            if optional_args['maximum'] == True:
+                for i_type in ['object', 'array', 'string', 'number', 'integer', 'boolean', 'null']:
+                    if i_type in count_typed and count_typed[i_type]['counter'] == 1:
+                        generate_value(output_dict, output_json_pointer, root, schema_root, count_typed[i_type]['list'][0], optional_args)
+                        return
 
             for i_type in count_typed:
                 if count_typed[i_type]['counter'] == 1 and (i_type == 'null' or i_type == 'boolean' or i_type == 'string' or i_type == 'array' or i_type == 'object'):
@@ -321,7 +325,10 @@ def generate_value(output_dict, output_json_pointer, root, schema_root, section,
         # TODO check invalid combination of *minimum/*maximum/multiple
     elif section_type == 'object':
         if optional_args['maximum'] == True:
-            properties_list = section['properties']
+            if 'properties' in section:
+                properties_list = section['properties']
+            else:
+                properties_list = []
         else:
             if 'required' in section:
                 properties_list = section['required']

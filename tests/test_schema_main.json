@@ -251,6 +251,35 @@
                     "if_then": { "const": "prop_if_else" }
                 }
             }
+        },
+        "choose_maximum_complex_str": {
+            "oneOf": [
+                {
+                    "type": "null"
+                },
+                {
+                    "type": "boolean"
+                },
+                {
+                    "type": "string"
+                }
+            ]
+        },
+        "choose_maximum_complex_obj": {
+            "oneOf": [
+                {
+                    "type": "null"
+                },
+                {
+                    "type": "boolean"
+                },
+                {
+                    "type": "object"
+                },
+                {
+                    "type": "string"
+                }
+            ]
         }
     },
    "if": {
