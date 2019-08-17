@@ -1,0 +1,4 @@
+tox==3.13.2
+pytest==5.0.1
+pytest-cov==2.7.1
+pytest-progress==1.2.1

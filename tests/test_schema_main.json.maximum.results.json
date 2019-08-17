@@ -1,0 +1,46 @@
+{
+"array": [0],
+"array_item_number": [],
+"array_item_number_min_items_0": [],
+"array_item_number_min_items_2": [0.0, 0.0],
+"array_item_string": [],
+"array_item_string_list": [],
+"array_item_string_min1": ["item1"],
+"boolean": true,
+"choose_maximum_complex_obj": {},
+"choose_maximum_complex_str": "",
+"const": "example_const",
+"enum_2": "enum1",
+"enum_like_const": "example_enum_like_const",
+"examples": 11,
+"examples_and_default": 10,
+"if_then": "if_else",
+"integer_exclusive_minimum": 50,
+"integer_minimum": 0,
+"null": null,
+"number_exclusive_minimum": 50,
+"number_minimum": 2,
+"object": {
+    "string": "son of J"
+    },
+"oneOf_bool_number": 15,
+"oneOf_const": {
+    "type": "object"
+    },
+"oneOf_multitypes": "const_string",
+"oneOf_null_number": 15,
+"oneOf_two_string_consts": "string1",
+"properties_if_then_else": {
+    "if_then": "prop_if_else",
+    "ifus": "go_else"
+    },
+"ref_external_file_string": "subschema",
+"ref_external_file_string_in_definitions": "subschema_foo",
+"ref_string_1": "ref_string 1",
+"ref_string_2": "ref_string 1",
+"string": "",
+"string_default": "foo",
+"string_enum": "a1",
+"string_min_lenght": "aaa",
+"test_anyOf": 11
+}

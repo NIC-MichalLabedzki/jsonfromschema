@@ -1,0 +1,6 @@
+[run]
+omit =
+    tests/*
+    __main__.py
+    setup.py
+    jsonfromschema/cli.py

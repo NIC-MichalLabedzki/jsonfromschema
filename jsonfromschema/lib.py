@@ -502,7 +502,7 @@ def generate_dict_from_file(schema_file, optional_args=None):
 
     with open(root_file, 'r') as input:
         schema = json.load(input)
-        if optional_args is not None and optional_args['verbose']:
+        if optional_args is not None and 'verbose' in optional_args and optional_args['verbose']:
             print('>>> Schema is:')
             pprint.pprint(schema)
     input.close()
