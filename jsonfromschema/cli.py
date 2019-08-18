@@ -7,11 +7,13 @@ import jsonfromschema.lib
 
 
 def main(args=sys.argv[1:]):
-    import select
-    if select.select([sys.stdin,],[],[],0.0)[0]:
-        has_stdin_data = True
-    else:
-        has_stdin_data = False
+    has_stdin_data = False
+    print(sys.version_info)
+    import platform
+    if platform.python_implementation() != 'Jython':
+        import select
+        if select.select([sys.stdin,],[],[],0.0)[0]:
+            has_stdin_data = True
 
     parser = argparse.ArgumentParser(description='Generate JSON data file (*.json) from JSON Schema')
     if not has_stdin_data:
