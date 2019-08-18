@@ -1,0 +1,26 @@
+language: python
+python:
+  - "2.7"
+  - "3.4"
+  - "3.5"
+  - "3.6"
+  - "3.7"
+  - "3.8"
+  - "3.8-dev"
+  - "nightly"
+  - "pypy"
+  - "pypy3"
+
+install:
+  - pip install -r requirements-dev.txt
+
+script:
+  - pytest
+
+notifications:
+  email:
+    recipients:
+        - michal.tomasz.labedzki@gmail.com
+    on_success: always
+    on_failure: always
+
