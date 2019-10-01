@@ -98,14 +98,23 @@ def generate_value(output_dict, output_json_pointer, root, schema_root, section,
                 import pkg_resources
                 path = '/'.join(optional_args['pkg_resource_root'].split('/')[0:-1]) + '/' + ref[0]
 
-#                xpath = path.split('/')
-#                for i_path, item in enumerate(xpath):
-#                    if xpath[i_path] == '.':
-#                        del xpath[i_path]
-#                    if xpath[i_path] == '..':
-#                        del xpath[i_path]
-#                        del xpath[i_path - 1]
-#                path = '/'.join(xpath)
+                # try to avoid warning (error with -Werror) from pkg_resources
+                # mostly from old json file with subschema(s)
+                # pkg_resources does not like absolute path
+                if path[0] == '/':
+                    xpath = path[1:]
+                else:
+                    xpath = path
+
+                # pkg_resources does not like relative '..' path
+                xpath = xpath.split('/')
+                for i_path, item in enumerate(xpath):
+                    if xpath[i_path] == '.':
+                        del xpath[i_path]
+                    if xpath[i_path] == '..':
+                        del xpath[i_path]
+                        del xpath[i_path - 1]
+                path = '/'.join(xpath)
 
                 old_path = optional_args['pkg_resource_root']
                 optional_args['pkg_resource_root'] = path
