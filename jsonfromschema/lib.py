@@ -65,13 +65,13 @@ def generate_value(output_dict, output_json_pointer, root, schema_root, section,
         save_data(output_dict, output_json_pointer, data)
         return
 
-    if optional_args['no-default'] == False:
+    if optional_args['no-default'] == False and optional_args['maximum'] == False:
         if 'default' in section:
             data = section['default']
             save_data(output_dict, output_json_pointer, data)
             return
 
-    if optional_args['no-examples'] == False:
+    if optional_args['no-examples'] == False and optional_args['maximum'] == False:
         if 'examples' in section:
             data = section['examples'][0]
             save_data(output_dict, output_json_pointer, data)
