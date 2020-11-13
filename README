@@ -177,6 +177,12 @@ optional_args:
 Where:
     ``pkg_resource_root`` is package name, for example "jsonschema"
 
+Changelog
+---------
+
+v0.1.4:
+    1. try use --maximum value for more json types
+    2. remove anoying python version from cli output
 
 TODO
 ----
