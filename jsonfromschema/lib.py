@@ -291,6 +291,8 @@ def generate_value(output_dict, output_json_pointer, root, schema_root, section,
         if 'minLength' in section:
             data = 'a' * section['minLength']
 
+        if optional_args['maximum'] == True:
+            data = "maximum_string"
         # TODO pattern
         # TODO format
     elif section_type == 'integer':
@@ -462,7 +464,10 @@ def generate_value(output_dict, output_json_pointer, root, schema_root, section,
         # TODO contains
         # TODO uniqueItems
     elif section_type == 'boolean':
-        data = False
+        if optional_args['maximum'] == True:
+            data = True
+        else:
+            data = False
     elif section_type == 'null':
         data = None
     else:
