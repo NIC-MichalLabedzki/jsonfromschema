@@ -8,7 +8,6 @@ import jsonfromschema.lib
 
 def main(args=sys.argv[1:]):
     has_stdin_data = False
-    print(sys.version_info)
     import platform
     if platform.python_implementation() != 'Jython':
         import select
