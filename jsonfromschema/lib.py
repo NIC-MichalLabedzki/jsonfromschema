@@ -143,7 +143,10 @@ def generate_value(output_dict, output_json_pointer, root, schema_root, section,
     if 'type' in section:
         if isinstance(section['type'], list) and len(section['type']) >= 1:
             # NOTE: use first type only is enough
-            section_type = section['type'][0]
+            if optional_args['maximum'] == False and 'null' in section['type']:
+                section_type = 'null'
+            else:
+                section_type = section['type'][0]
         else:
             section_type = section['type']
     else:
