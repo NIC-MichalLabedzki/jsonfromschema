@@ -60,6 +60,8 @@ def generate_value(output_dict, output_json_pointer, root, schema_root, section,
             i_output_dict[path[-1]] = value
 
 
+    if section is None:
+        return
     if 'const' in section:
         data = section['const']
         save_data(output_dict, output_json_pointer, data)
@@ -74,6 +76,10 @@ def generate_value(output_dict, output_json_pointer, root, schema_root, section,
     if optional_args['no-examples'] == False and optional_args['maximum'] == False:
         if 'examples' in section:
             data = section['examples'][0]
+            save_data(output_dict, output_json_pointer, data)
+            return
+        if 'example' in section:
+            data = section['example']
             save_data(output_dict, output_json_pointer, data)
             return
 
@@ -502,7 +508,7 @@ def generate_dict(root_name, schema_dict, optional_args=None):
     output_dict = {}
     output_json_pointer = '/'
     generate_value(output_dict, output_json_pointer, root_name, schema_dict, subschema_dict, optional_args)
-    return output_dict['']
+    return output_dict.get('')
 
 
 def generate_dict_from_text(root_name, schema_text, optional_args=None):
