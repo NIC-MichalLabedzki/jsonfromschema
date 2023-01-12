@@ -60,6 +60,8 @@ def generate_value(output_dict, output_json_pointer, root, schema_root, section,
             i_output_dict[path[-1]] = value
 
 
+    if section is None:
+        return
     if 'const' in section:
         data = section['const']
         save_data(output_dict, output_json_pointer, data)
