@@ -76,6 +76,10 @@ def generate_value(output_dict, output_json_pointer, root, schema_root, section,
             data = section['examples'][0]
             save_data(output_dict, output_json_pointer, data)
             return
+        if 'example' in section:
+            data = section['example']
+            save_data(output_dict, output_json_pointer, data)
+            return
 
     if 'enum' in section:
         data = section['enum'][0]
@@ -502,7 +506,7 @@ def generate_dict(root_name, schema_dict, optional_args=None):
     output_dict = {}
     output_json_pointer = '/'
     generate_value(output_dict, output_json_pointer, root_name, schema_dict, subschema_dict, optional_args)
-    return output_dict['']
+    return output_dict.get('')
 
 
 def generate_dict_from_text(root_name, schema_text, optional_args=None):
